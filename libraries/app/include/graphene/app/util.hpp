@@ -28,9 +28,11 @@
 #include <fc/uint128.hpp>
 
 #include <graphene/protocol/asset.hpp>
+#include <graphene/chain/asset_object.hpp>
 
 namespace graphene { namespace app {
    using namespace graphene::protocol;
+   using graphene::chain::asset_object;
 
    typedef boost::multiprecision::uint256_t u256;
 
@@ -38,6 +40,7 @@ namespace graphene { namespace app {
    fc::uint128 to_capped128( const u256& t );
    string uint128_amount_to_string( const fc::uint128& amount, const uint8_t precision );
    string price_to_string( const price& _price, const uint8_t base_precision, const uint8_t quote_precision);
+   string price_to_string( const price& _price, const asset_object& _base, const asset_object& _quote );
    string price_diff_percent_string( const price& old_price, const price& new_price );
 
 } }

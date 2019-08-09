@@ -99,6 +99,16 @@ string price_to_string( const price& _price, const uint8_t base_precision, const
    return uint128_amount_to_string( price128, 19 + base_precision - quote_precision );
 } FC_CAPTURE_AND_RETHROW( (_price)(base_precision)(quote_precision) ) }
 
+string price_to_string( const price& _price, const asset_object& _base, const asset_object& _quote )
+{ try {
+   if( _price.base.asset_id == _base.id && _price.quote.asset_id == _quote.id )
+      return price_to_string( _price, _base.precision, _quote.precision );
+   else if( _price.base.asset_id == _quote.id && _price.quote.asset_id == _base.id )
+      return price_to_string( ~_price, _base.precision, _quote.precision );
+   else
+      FC_ASSERT( !"bad parameters" );
+} FC_CAPTURE_AND_RETHROW( (_price)(_base)(_quote) ) }
+
 string price_diff_percent_string( const price& old_price, const price& new_price )
 { try {
    FC_ASSERT( old_price.base.asset_id == new_price.base.asset_id );
