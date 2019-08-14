@@ -53,7 +53,8 @@ enum market_history_object_type
    order_history_object_type = 0,
    bucket_object_type = 1,
    market_ticker_object_type = 2,
-   market_ticker_meta_object_type = 3
+   market_ticker_meta_object_type = 3,
+   asset_trading_stats_object_type = 4
 };
 
 struct bucket_key
@@ -195,17 +196,30 @@ typedef multi_index_container<
 
 struct by_market;
 struct by_volume;
+struct by_asset_volume;
 typedef multi_index_container<
    market_ticker_object,
    indexed_by<
       ordered_unique< tag<by_id>, member< object, object_id_type, &object::id > >,
-      ordered_non_unique< tag<by_volume>, member< market_ticker_object, fc::uint128, &market_ticker_object::base_volume > >,
-      ordered_unique<
-         tag<by_market>,
-         composite_key<
-            market_ticker_object,
-            member<market_ticker_object, asset_id_type, &market_ticker_object::base>,
-            member<market_ticker_object, asset_id_type, &market_ticker_object::quote>
+      ordered_unique< tag<by_volume>,
+         composite_key< market_ticker_object,
+            member< market_ticker_object, fc::uint128, &market_ticker_object::base_volume >,
+            member< object, object_id_type, &object::id >
+         >,
+         composite_key_compare< std::greater<fc::uint128>, std::less<object_id_type> >
+      >,
+      ordered_unique< tag<by_asset_volume>,
+         composite_key< market_ticker_object,
+            member< market_ticker_object, asset_id_type, &market_ticker_object::base >,
+            member< market_ticker_object, fc::uint128, &market_ticker_object::base_volume >,
+            member< object, object_id_type, &object::id >
+         >,
+         composite_key_compare< std::less<asset_id_type>, std::greater<fc::uint128>, std::less<object_id_type> >
+      >,
+      ordered_unique< tag<by_market>,
+         composite_key< market_ticker_object,
+            member< market_ticker_object, asset_id_type, &market_ticker_object::base >,
+            member< market_ticker_object, asset_id_type, &market_ticker_object::quote >
          >
       >
    >
