@@ -52,7 +52,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
-
+#include <ctime>
 #include <fc/log/file_appender.hpp>
 #include <fc/log/logger.hpp>
 #include <fc/log/logger_config.hpp>
@@ -570,17 +570,23 @@ bool application_impl::handle_block(const graphene::net::block_message& blk_msg,
 
    auto latency = fc::time_point::now() - blk_msg.block.timestamp;
    if (!sync_mode || blk_msg.block.block_num() % 10000 == 0)
-   {
+   {  
+      time_t now = time(0);
+      tm *ltm = localtime(&now);
       const auto& witness = blk_msg.block.witness(*_chain_db);
       const auto& witness_account = witness.witness_account(*_chain_db);
       auto last_irr = _chain_db->get_dynamic_global_properties().last_irreversible_block_num;
-      ilog("Got block: #${n} ${bid} time: ${t} transaction(s): ${x} latency: ${l} ms from: ${w}  irreversible: ${i} (-${d})",
+      ilog("Got block: #${n} ${bid} time: ${t} transaction(s): ${x} latency: ${l} ms from: ${w}  irreversible: ${i} (-${d}) localtime: ${ld},${lh}:${lm}:${ls}",
            ("t",blk_msg.block.timestamp)
            ("n", blk_msg.block.block_num())
            ("bid", blk_msg.block.id())
            ("x", blk_msg.block.transactions.size())
            ("l", (latency.count()/1000))
            ("w",witness_account.name)
+           ("ld",ltm->tm_mday)
+           ("lh",ltm->tm_hour)
+           ("lm",ltm->tm_min)
+           ("ls",ltm->tm_sec)
            ("i",last_irr)("d",blk_msg.block.block_num()-last_irr) );
    }
    FC_ASSERT( (latency.count()/1000) > -5000, "Rejecting block with timestamp in the future" );
